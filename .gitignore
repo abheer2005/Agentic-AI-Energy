@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+
+# Local environment
+.env
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Runtime data / databases
+data/telemetry.csv
+data/decisions.csv
+data/decisions_v2.csv
+data/decisions_v3.csv
+data/energy_events.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# Test/cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+~$*

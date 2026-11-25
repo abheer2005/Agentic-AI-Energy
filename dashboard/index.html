@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <meta
+    name="description"
+    content="P_308 Agentic AI Energy Management real-time control room dashboard"
+  />
+  <title>Agentic Energy AI — Control Room</title>
+  <link
+    rel="stylesheet"
+    href="/dashboard/styles.css"
+  />
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">
+          <span class="brand-mark-core">⚡</span>
+        </div>
+
+        <div>
+          <p class="eyebrow">P_308 • REAL-TIME ENERGY INTELLIGENCE</p>
+          <h1>Agentic Energy AI</h1>
+          <p class="subtitle">
+            Autonomous monitoring, forecasting, optimization and operator intelligence
+          </p>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div
+          id="connectionPill"
+          class="status-pill status-offline"
+          title="FastAPI WebSocket connection status"
+        >
+          <span class="status-dot"></span>
+          <span id="connectionText">Connecting</span>
+        </div>
+
+        <button
+          id="refreshButton"
+          class="outline-button"
+          type="button"
+        >
+          <span>↻</span>
+          Refresh snapshot
+        </button>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="hero-grid">
+        <article class="panel hero-status-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">SYSTEM STATE</p>
+              <h2>Live operating status</h2>
+            </div>
+
+            <span
+              id="systemSeverityBadge"
+              class="severity-badge severity-none"
+            >
+              NORMAL
+            </span>
+          </div>
+
+          <div class="hero-status-content">
+            <div class="decision-orb">
+              <div class="decision-orb-ring"></div>
+              <div class="decision-orb-content">
+                <span class="orb-label">SUPERVISOR</span>
+                <strong id="heroDecision">WAITING FOR DATA</strong>
+                <span id="heroPriority">Priority —</span>
+              </div>
+            </div>
+
+            <div class="hero-status-copy">
+              <p id="heroReason">
+                Waiting for the first live decision from the agentic controller.
+              </p>
+
+              <div class="mini-status-grid">
+                <div>
+                  <span>Control mode</span>
+                  <strong id="controlMode">—</strong>
+                </div>
+                <div>
+                  <span>Anomaly signals</span>
+                  <strong id="anomalySignals">0</strong>
+                </div>
+                <div>
+                  <span>Reading</span>
+                  <strong id="readingId">—</strong>
+                </div>
+                <div>
+                  <span>Last update</span>
+                  <strong id="lastUpdated">—</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel operator-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">LOCAL LLM</p>
+              <h2>AI operator brief</h2>
+            </div>
+
+            <span
+              id="operatorSource"
+              class="source-badge"
+            >
+              awaiting
+            </span>
+          </div>
+
+          <div class="operator-body">
+            <h3 id="operatorHeadline">
+              Operator intelligence will appear here.
+            </h3>
+
+            <p
+              id="operatorSituation"
+              class="operator-situation"
+            >
+              The local LLM summarizes deterministic controller outputs without
+              changing actuator commands.
+            </p>
+
+            <div class="operator-explanation">
+              <span>WHY</span>
+              <p id="operatorWhy">—</p>
+            </div>
+
+            <div class="operator-columns">
+              <div>
+                <span class="small-heading">Suggested checks</span>
+                <ul id="operatorActions" class="compact-list">
+                  <li>Waiting for live analysis.</li>
+                </ul>
+              </div>
+
+              <div>
+                <span class="small-heading">Active risks</span>
+                <ul id="operatorRisks" class="compact-list">
+                  <li>No risk assessment received yet.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="operator-meta">
+              <span id="operatorModel">Model —</span>
+              <span id="operatorTrigger">Trigger —</span>
+              <span id="operatorLatency">Latency —</span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="metric-grid" aria-label="Live energy metrics">
+        <article class="metric-card">
+          <div class="metric-icon">⌁</div>
+          <div class="metric-copy">
+            <span>Building demand</span>
+            <strong><span id="demandValue">—</span> kW</strong>
+            <small id="demandTrend">Awaiting telemetry</small>
+          </div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-icon">☀</div>
+          <div class="metric-copy">
+            <span>Solar generation</span>
+            <strong><span id="solarValue">—</span> kW</strong>
+            <small id="solarCoverage">Coverage —</small>
+          </div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-icon">▰</div>
+          <div class="metric-copy">
+            <span>Battery SOC</span>
+            <strong><span id="batteryValue">—</span>%</strong>
+            <small id="batteryDispatch">Dispatch —</small>
+          </div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-icon">⌂</div>
+          <div class="metric-copy">
+            <span>Grid import</span>
+            <strong><span id="gridValue">—</span> kW</strong>
+            <small id="gridReduction">Reduction —</small>
+          </div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-icon">₹</div>
+          <div class="metric-copy">
+            <span>Grid price</span>
+            <strong>₹<span id="priceValue">—</span>/kWh</strong>
+            <small id="costRate">Cost rate —</small>
+          </div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-icon">CO₂</div>
+          <div class="metric-copy">
+            <span>Carbon intensity</span>
+            <strong><span id="carbonValue">—</span> g/kWh</strong>
+            <small id="carbonRate">Emission rate —</small>
+          </div>
+        </article>
+      </section>
+
+      <section class="main-grid">
+        <article class="panel energy-flow-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">POWER FLOW</p>
+              <h2>Energy routing</h2>
+            </div>
+
+            <span id="flowTimestamp" class="muted-badge">live</span>
+          </div>
+
+          <div class="energy-flow">
+            <div class="flow-node solar-node">
+              <span class="flow-icon">☀</span>
+              <strong>Solar</strong>
+              <span><b id="flowSolar">—</b> kW</span>
+            </div>
+
+            <div class="flow-line flow-line-left">
+              <span class="flow-pulse"></span>
+            </div>
+
+            <div class="flow-node building-node">
+              <span class="flow-icon">⌂</span>
+              <strong>Building</strong>
+              <span><b id="flowDemand">—</b> kW</span>
+            </div>
+
+            <div class="flow-line flow-line-right">
+              <span class="flow-pulse"></span>
+            </div>
+
+            <div class="flow-node grid-node">
+              <span class="flow-icon">↯</span>
+              <strong>Grid</strong>
+              <span><b id="flowGrid">—</b> kW</span>
+            </div>
+
+            <div class="flow-line flow-line-bottom">
+              <span class="flow-pulse"></span>
+            </div>
+
+            <div class="flow-node battery-node">
+              <span class="flow-icon">▰</span>
+              <strong>Battery</strong>
+              <span><b id="flowBatteryPower">—</b> kW</span>
+            </div>
+          </div>
+
+          <div class="soc-track-block">
+            <div class="soc-track-header">
+              <span>Battery state of charge</span>
+              <strong id="socTrackLabel">—%</strong>
+            </div>
+            <div class="soc-track">
+              <div id="socTrackFill" class="soc-track-fill"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel forecast-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">ML FORECAST</p>
+              <h2>Demand outlook</h2>
+            </div>
+
+            <span id="forecastTrendBadge" class="muted-badge">—</span>
+          </div>
+
+          <div class="forecast-number">
+            <span>+<b id="forecastHorizon">15</b> min</span>
+            <strong><span id="forecastValue">—</span> kW</strong>
+          </div>
+
+          <div class="forecast-comparison">
+            <div>
+              <span>Current</span>
+              <strong><span id="forecastCurrent">—</span> kW</strong>
+            </div>
+            <div>
+              <span>Predicted change</span>
+              <strong><span id="forecastChange">—</span> kW</strong>
+            </div>
+          </div>
+
+          <div class="model-quality">
+            <div>
+              <span>MAE</span>
+              <strong id="forecastMae">—</strong>
+            </div>
+            <div>
+              <span>RMSE</span>
+              <strong id="forecastRmse">—</strong>
+            </div>
+            <div>
+              <span>R²</span>
+              <strong id="forecastR2">—</strong>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="main-grid chart-grid">
+        <article class="panel chart-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">LIVE TREND</p>
+              <h2>Demand, solar and grid</h2>
+            </div>
+            <span class="muted-badge">last 60 samples</span>
+          </div>
+
+          <div class="chart-wrap">
+            <canvas
+              id="powerChart"
+              aria-label="Live power trend chart"
+            ></canvas>
+          </div>
+
+          <div class="chart-legend">
+            <span><i class="legend-demand"></i>Demand</span>
+            <span><i class="legend-solar"></i>Solar</span>
+            <span><i class="legend-grid"></i>Grid</span>
+          </div>
+        </article>
+
+        <article class="panel chart-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">BATTERY</p>
+              <h2>SOC history</h2>
+            </div>
+            <span class="muted-badge">last 60 samples</span>
+          </div>
+
+          <div class="chart-wrap">
+            <canvas
+              id="socChart"
+              aria-label="Battery state of charge chart"
+            ></canvas>
+          </div>
+
+          <div class="chart-legend">
+            <span><i class="legend-soc"></i>Battery SOC</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="main-grid">
+        <article class="panel optimization-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">OPTIMIZER</p>
+              <h2>Deterministic dispatch</h2>
+            </div>
+
+            <span
+              id="constraintBadge"
+              class="muted-badge"
+            >
+              unconstrained
+            </span>
+          </div>
+
+          <div class="optimization-grid">
+            <div class="optimization-stat">
+              <span>Battery power</span>
+              <strong><span id="optBattery">—</span> kW</strong>
+            </div>
+            <div class="optimization-stat">
+              <span>Grid target</span>
+              <strong><span id="optGrid">—</span> kW</strong>
+            </div>
+            <div class="optimization-stat">
+              <span>Load reduction</span>
+              <strong><span id="optLoadReduction">—</span> kW</strong>
+            </div>
+            <div class="optimization-stat">
+              <span>Projected SOC</span>
+              <strong><span id="optSoc">—</span>%</strong>
+            </div>
+            <div class="optimization-stat">
+              <span>Cost / hour</span>
+              <strong>₹<span id="optCost">—</span></strong>
+            </div>
+            <div class="optimization-stat">
+              <span>CO₂ / hour</span>
+              <strong><span id="optCarbon">—</span> kg</strong>
+            </div>
+          </div>
+
+          <div class="optimizer-explanation">
+            <span>OPTIMIZATION RATIONALE</span>
+            <p id="optimizationExplanation">Waiting for optimizer output.</p>
+          </div>
+        </article>
+
+        <article class="panel anomaly-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">ANOMALY INTELLIGENCE</p>
+              <h2>Risk monitoring</h2>
+            </div>
+
+            <span
+              id="anomalySeverityBadge"
+              class="severity-badge severity-none"
+            >
+              NONE
+            </span>
+          </div>
+
+          <div class="anomaly-summary">
+            <strong id="anomalyStatus">NORMAL</strong>
+            <p id="anomalySummary">
+              Waiting for anomaly analysis.
+            </p>
+          </div>
+
+          <div class="anomaly-meta-grid">
+            <div>
+              <span>Rule signals</span>
+              <strong id="ruleAnomalyCount">0</strong>
+            </div>
+            <div>
+              <span>ML status</span>
+              <strong id="mlAnomalyStatus">—</strong>
+            </div>
+            <div>
+              <span>ML severity</span>
+              <strong id="mlAnomalySeverity">—</strong>
+            </div>
+            <div>
+              <span>Decision score</span>
+              <strong id="mlDecisionScore">—</strong>
+            </div>
+          </div>
+
+          <div id="ruleEventList" class="rule-event-list">
+            <div class="empty-state">
+              No active rule-based anomalies.
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="main-grid">
+        <article class="panel alerts-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">INCIDENT HISTORY</p>
+              <h2>Recent alerts</h2>
+            </div>
+
+            <button
+              id="loadAlertsButton"
+              class="outline-button compact-button"
+              type="button"
+            >
+              Reload
+            </button>
+          </div>
+
+          <div id="alertsList" class="history-list">
+            <div class="empty-state">
+              No alert history loaded.
+            </div>
+          </div>
+        </article>
+
+        <article class="panel agents-panel">
+          <div class="panel-header">
+            <div>
+              <p class="section-kicker">MULTI-AGENT VIEW</p>
+              <h2>Specialist agents</h2>
+            </div>
+
+            <span class="muted-badge">live</span>
+          </div>
+
+          <div id="agentsGrid" class="agents-grid">
+            <div class="agent-tile">
+              <span>Load Agent</span>
+              <strong>—</strong>
+            </div>
+            <div class="agent-tile">
+              <span>Battery Agent</span>
+              <strong>—</strong>
+            </div>
+            <div class="agent-tile">
+              <span>Pricing Agent</span>
+              <strong>—</strong>
+            </div>
+            <div class="agent-tile">
+              <span>Solar Agent</span>
+              <strong>—</strong>
+            </div>
+            <div class="agent-tile">
+              <span>Grid Agent</span>
+              <strong>—</strong>
+            </div>
+            <div class="agent-tile">
+              <span>Forecast Agent</span>
+              <strong>—</strong>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <footer class="footer">
+        <div>
+          <strong>Agentic Energy AI</strong>
+          <span>
+            Deterministic control • ML forecasting • anomaly intelligence • local LLM
+          </span>
+        </div>
+
+        <div class="footer-status">
+          <span id="footerApiStatus">API: checking</span>
+          <span id="footerMqttStatus">MQTT: checking</span>
+          <span id="footerMessageCount">Messages: 0</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="/dashboard/app.js"></script>
+</body>
+</html>
